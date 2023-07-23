@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block content%}
+
+
+<div class="container-fluid  mt-5 text-center vh-100" >
+<div class="h1" id="myHeading">Donde Cuadre</div>
+<div class="h3">Mesa 1 - 2 pa 2</div>
+<div class="row justify-content-center" id="main-container">
+  <div class="col-2" id="player1">
+      <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="1" alt="card1">
+      <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="2" alt="card2">
+      <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="3" alt="card3">
+
+   </div>
+  <div class="col-2" id="hand-player1">
+    <div id="played_cards"></div>
+  </div>
+  <div class="col-2">
+    <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="vira" alt="vira">
+  </div>
+  <div class="col-2" id="hand-player2">
+    
+  </div>
+  <div class="col-2" id="player2">
+    <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="4" alt="card4">
+    <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="5" alt="card5">
+    <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="6" alt="card6">
+  </div>
+</div>
+<div class="row">
+  <div class="col">
+    <div id="score">Piedras</div>
+  </div>
+</div>
+</div>
+<script>
+//tendria que hacer que no se recargue la parte del script!!!!!
+
+var ws = new WebSocket("ws://localhost:8000/ws");
+var user_id = getCookieValue("user_id")
+console.log(user_id)
+var heading = $("#myHeading");
+var vira = $("#vira")
+var my_turn = false
+var playerId = null
+var reload_page = $("#main-container").html();
+
+
+function orderPlayers(players){
+  // Recorre la lista "players" y asigna los valores correspondientes a las IDs
+  $.each(players, function(index, value) {
+    var playerId = "player" + (index + 1);
+    // Verifica si el elemento con la ID ya existe
+    if ($("#" + playerId).length > 0) {
+      $("#" + playerId).attr("id", value);
+      $("#hand-" + playerId).attr("id", "hand-"+value);
+    } else {
+      // Crea un nuevo elemento con la ID y el valor correspondiente
+      $("<div>").attr("id", playerId).text(value).appendTo("#players-container");
+    }
+  });
+}
+
+  ws.onmessage = function(event) {
+    const message = JSON.parse(event.data);
+    //si recibimo la lista de jugadores la ordeno, siendo yo player 1
+    if(message.players){
+      currentIndex = message.players.indexOf(user_id)
+      let players = [user_id].concat(message.players.slice(0, currentIndex), message.players.slice(currentIndex + 1));
+      // Ahora la lista "players" contiene todos los jugadores ordenados desde el p1
+      orderPlayers(players)
+      addMouseEvent();
+    }
+  if (message.hand){
+      let hand = JSON.parse(message.hand);
+        for (let i = 0; i < (hand.length); i++) {
+          path = "/static/img/"+hand[i].value + hand[i].suit+".png"
+          document.getElementById(i+1).src = path.toLowerCase();
+        }
+
+    }
+    if (message.vira){
+      let vira = message.vira
+      path = "/static/img/"+vira +".png"
+      $('#vira').attr('src', path.toLowerCase());
+    }
+    if (message.turn !== undefined && message.turn !== null) {
+      // La propiedad 'turn' contiene un valor
+      my_turn = message.turn;
+      console.log(my_turn)
+    }
+    //si escuchamos que s nueva ronda informamos a todos
+    if(message.next_round !== undefined && message.next_round !== null){
+      ws.send(JSON.stringify({"new_round": true}));
+      $("#main-container").html(reload_page)
+    }
+    //comprobamos si ha gnado alguna piedra o chico alguien y lo comunicamos
+    if(message.chicos !== undefined  && message.chicos !== null){
+      $("#score").text("Piedras "+ message.piedras.team1 + " - "+ message.piedras.team2 ) 
+    }
+    //dibujamos la carta cuando el rival juega
+    if (message.player){
+      if (message.player != user_id){
+      path = "/static/img/"+message.card_played+".png"
+      var img = $("<img>");
+      // Establecer los atributos del elemento de imagen
+      img.attr({
+        src: path.toLowerCase(),
+        class: "img-fluid",
+        alt: "cards-played"
+      });
+      // Agregar el elemento de imagen al documento
+      img.appendTo("#hand-"+message.player); 
+
+      $("#"+message.player + " img").last().remove();
+      }
+    }
+
+  };
+  ws.onopen = function() {
+    ws.send(JSON.stringify({"user_id": user_id}));
+  };
+
+
+  // Obtener el valor de una cookie por su nombre
+  function getCookieValue(cookieName) {
+    const cookies = document.cookie.split("; ");
+    for (const cookie of cookies) {
+      const [name, value] = cookie.split("=");
+      if (name === cookieName) {
+        return decodeURIComponent(value);
+      }
+    }
+    return null; // La cookie no existe
+  }
+  
+function addMouseEvent(){
+  // Agregar el evento mouseover a las imágenes de la columna #player1
+  $("#"+ user_id +" img").mouseover(function() {
+    if(my_turn){
+      $(this).css("cursor", "pointer");
+    }
+  });
+  
+  // Restaurar el cursor al salir del área de las imágenes de la columna #player1
+  $("#"+ user_id +" img").mouseout(function() {
+      $(this).css("cursor", "default");
+  });
+  
+  // Agregar un evento de clic a las imágenes de la columna #player1 utilizando jQuery
+  $("#"+ user_id +" img").click(function() {
+    if(my_turn){
+      ws.send(JSON.stringify({"card": $(this).attr('id')}));
+      $(this).appendTo('#played_cards').off("click").unbind("mouseover");
+    }
+  });
+};
+
+</script>
+{% endblock %}
