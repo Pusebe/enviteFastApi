@@ -2,7 +2,7 @@ import uvicorn as uvicorn
 from game.game import Game
 from game.player import Player
 from fastapi import FastAPI, Request, Response, WebSocket,  WebSocketDisconnect
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uuid
@@ -32,7 +32,8 @@ async def read_root(request: Request):
 async def get_table(request: Request, response: Response, table_id:int):
 
     user_id = (request.cookies.get("user_id"))
-
+    print(table_id)
+    print(tables)
     if table_id not in tables:
         tables[table_id] = Game([])
 
@@ -47,7 +48,7 @@ async def get_table(request: Request, response: Response, table_id:int):
         return "Vaya, parece que ya empezó la partida"
 
 
-    response = templates.TemplateResponse("table.html", {"request": request})  #aquí se le mandarán los datos de game correspondiente de cada mesa  
+    response = templates.TemplateResponse("table.html", {"request": request, "table_id": table_id})  #aquí se le mandarán los datos de game correspondiente de cada mesa  
     return response
 
 
@@ -60,7 +61,10 @@ class ConnectionManager:
         self.active_connections.append(websocket)
 
     def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+        if self.active_connections:
+            self.active_connections.remove(websocket)
+        else:
+            pass
 
     async def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_json(message)
@@ -68,6 +72,13 @@ class ConnectionManager:
     async def broadcast(self, message: str):
         for connection in self.active_connections:
             await connection.send_json(message)
+
+    async def disconnect_all(self):
+    # Cerrar todas las conexiones de websockets activas
+        for websocket in self.active_connections:
+            if websocket in self.active_connections:
+                await websocket.close()
+        self.active_connections.clear()
 
 
 manager = ConnectionManager()
@@ -77,9 +88,10 @@ game = None
 new_set = False
 card = None
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+@app.websocket("/ws/{table_id}")
+async def websocket_endpoint(websocket: WebSocket, table_id:int):
     await manager.connect(websocket)
+    global users_connected_to_socket 
     global game_started
     global game
     global new_set
@@ -89,6 +101,15 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_json()
             user_id = data.get("user_id")
             card_value = data.get("card")
+
+            if data.get("reset"):
+                print("si entró aquí eres un desgraciado")
+                del tables[table_id]
+                game_started = False
+                users_connected_to_socket = {}
+                await manager.broadcast({"reload":True})
+                await manager.disconnect_all()
+                break
             if card_value is not None:
                 card = int(card_value)
 
@@ -99,7 +120,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
             #comprobamos si el juego está iniciado, y sino, lo inicializamos   
             if not game_started and len(users_connected_to_socket) == 2:
-                game = tables[1]
+                game = tables[table_id]
                 game.create_teams()
                 game.set_next_player()
                 game.prepare_deck_and_deal()
@@ -109,14 +130,13 @@ async def websocket_endpoint(websocket: WebSocket):
             if game_started:                    
                 if not (game.team1.has_won_round(game.points_to_win_round) or game.team2.has_won_round(game.points_to_win_round)): 
                     if new_set:
-                        #si le toca al jugador de este websocket mandamos turn true para saber que le toca a el
+                        #si le toca al jugador de este websocket mandamos turn true para saber que le toca a él
                         await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
                         
                         players_id = [player.name for player in game.players]
                         await manager.broadcast({"players": players_id})
                         await manager.broadcast({"vira":f"{(game.deck.vira.value + game.deck.vira.suit).lower()}"})
                         for player in game.players_order:
-                            print(player.hand)
                             await manager.send_personal_message({"hand": player.json_hand()}, users_connected_to_socket[player.name])
                         
                         new_set = False
@@ -138,12 +158,6 @@ async def websocket_endpoint(websocket: WebSocket):
                         #una vez rotada la lista mandamos de nuevo el turno ok
                         await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
 
-                    #a partir de aqui es único para cada jugador     
-                    """
-                    game.players[0].show_hand()
-                    card = game.players[0].play_card(1)
-                    game.cards_played.append(card)
-                    """      
                     if len(game.players) == len(game.cards_played):
                         highest_card = game.determine_highest_card(game.cards_played)
                         game.play_rounds(highest_card)
@@ -185,14 +199,13 @@ async def websocket_endpoint(websocket: WebSocket):
                     game.next_player_to_play = game.start_player_index
                     game.set_next_player()
                     #revisamos que vuelva a jugar el jugador qsiguiento.
+                    time.sleep(3)
                     await manager.broadcast({"turn": False, "next_round": True})
                     await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
-                    time.sleep(3)
-                    # for i, hand in enumerate(game.hands):
-                    #     game.players[i].receive_cards(hand)
 
                 if (game.team1.has_won_game(game.points_to_win_game) or game.team2.has_won_game(game.points_to_win_game)):
                     game.reset_sets()
+                    game.reset_games()
 
                 if game.team1.has_won_game(game.points_to_win_game):
                     print("El equipo 1 gana la partida.")
@@ -208,9 +221,10 @@ async def websocket_endpoint(websocket: WebSocket):
                 break
         if disconnected_user_id:
             del users_connected_to_socket[disconnected_user_id]
-        await manager.broadcast({f"Client #{disconnected_user_id} left the chat": "adiós"})
+
+        if len(users_connected_to_socket) < 0:
+            await manager.broadcast({f"Client #{disconnected_user_id} left the chat": "adiós"})
         new_set = True
 
 if __name__ == "__main__":
-    print("esta correidno")
     uvicorn.run(app, host="0.0.0.0", port=8000)
