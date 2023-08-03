@@ -32,6 +32,8 @@ async def read_root(request: Request):
 async def get_table(request: Request, response: Response, table_id:int):
 
     user_id = (request.cookies.get("user_id"))
+    if user_id is None:
+        return RedirectResponse("/")
     print(table_id)
     print(tables)
     if table_id not in tables:
