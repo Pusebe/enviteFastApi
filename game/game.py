@@ -48,7 +48,7 @@ class Game:
     def determine_highest_card(self, cards):
         highest_card = 0
         for card in cards:
-            if highest_card is 0 or self.is_higher(card, highest_card, self.deck.vira.suit):
+            if highest_card == 0 or self.is_higher(card, highest_card, self.deck.vira.suit):
                 highest_card = card
         return highest_card
 
