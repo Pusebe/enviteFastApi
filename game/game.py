@@ -48,7 +48,7 @@ class Game:
     def determine_highest_card(self, cards):
         highest_card = 0
         for card in cards:
-            if highest_card == 0 or self.is_higher(card, highest_card, self.deck.vira.suit):
+            if self.is_higher(card, highest_card, self.deck.vira.suit):
                 highest_card = card
         return highest_card
 
@@ -73,16 +73,12 @@ class Game:
 
         if card.suit == vira_suit and card.numeric_value == 2:
             card.numeric_value = 12.5
-            print("soy el 2 de lo virado")
             return previous_highest_card.numeric_value < 12.5
         
         if card.suit not in [previous_highest_card.suit, vira_suit]:
-            print("soy Falso")
             return False
         if card.suit == vira_suit and previous_highest_card.suit != vira_suit and previous_highest_card.numeric_value <= 12:
-            print("soy Verdadero")
             return True
-        print(f"soy Falso {card.numeric_value > previous_highest_card.numeric_value}")
         return card.numeric_value > previous_highest_card.numeric_value
 
     def prepare_deck_and_deal(self):
