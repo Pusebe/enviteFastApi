@@ -46,7 +46,7 @@ class Game:
         self.start_player_index = (self.start_player_index + 1) % len(self.players)
 
     def determine_highest_card(self, cards):
-        highest_card = 0
+        highest_card = cards[0]
         for card in cards:
             if self.is_higher(card, highest_card, self.deck.vira.suit):
                 highest_card = card
@@ -61,19 +61,19 @@ class Game:
         if len(self.players) > 4:
             if card.suit == "Bastos" and card.numeric_value == 3:
                 card.numeric_value = 15
-                return previous_highest_card.numeric_value < 15
+                return previous_highest_card.numeric_value <= 15
             
             if card.suit == "Bastos" and card.numeric_value == 11:
                 card.numeric_value = 14
-                return previous_highest_card.numeric_value < 14
+                return previous_highest_card.numeric_value <= 14
             
             if card.suit == "Oros" and card.numeric_value == 10:
                 card.numeric_value = 13
-                return previous_highest_card.numeric_value < 13
+                return previous_highest_card.numeric_value <= 13
 
         if card.suit == vira_suit and card.numeric_value == 2:
             card.numeric_value = 12.5
-            return previous_highest_card.numeric_value < 12.5
+            return previous_highest_card.numeric_value <= 12.5
         
         if card.suit not in [previous_highest_card.suit, vira_suit]:
             return False
