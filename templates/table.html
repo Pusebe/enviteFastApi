@@ -33,11 +33,12 @@
     <div id="score">Piedras</div>
   </div>
 </div>
+<button class="button" id="reset">Reset</button>
 </div>
 <script>
 //tendria que hacer que no se recargue la parte del script!!!!!
 
-var ws = new WebSocket("ws://16.171.200.60:80/ws");
+var ws = new WebSocket("ws://16.171.200.60:80/ws/1");
 var user_id = getCookieValue("user_id")
 console.log(user_id)
 var heading = $("#myHeading");
@@ -72,6 +73,11 @@ function orderPlayers(players){
       orderPlayers(players)
       addMouseEvent();
     }
+    // para debugear si alguien pulsa reset la ronda se reinicia
+  if (message.reload) {
+    alert("Ronda reiniciada")
+    location.reload();
+  }
   if (message.hand){
       let hand = JSON.parse(message.hand);
         for (let i = 0; i < (hand.length); i++) {
@@ -88,7 +94,13 @@ function orderPlayers(players){
     if (message.turn !== undefined && message.turn !== null) {
       // La propiedad 'turn' contiene un valor
       my_turn = message.turn;
-      console.log(my_turn)
+      if(my_turn){
+        response = "Tu turno"
+      }
+      else{
+        response = "No te toca"
+      }
+      console.log(response)
     }
     //si escuchamos que s nueva ronda informamos a todos
     if(message.next_round !== undefined && message.next_round !== null){
@@ -134,6 +146,10 @@ function orderPlayers(players){
     }
     return null; // La cookie no existe
   }
+
+$("#reset").click(function() {
+      ws.send(JSON.stringify({"reset": true}));
+  });
   
 function addMouseEvent(){
   // Agregar el evento mouseover a las imágenes de la columna #player1
