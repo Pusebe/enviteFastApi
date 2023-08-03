@@ -38,7 +38,7 @@
 <script>
 //tendria que hacer que no se recargue la parte del script!!!!!
 
-var ws = new WebSocket("ws://16.171.200.60:5001/ws/1");
+var ws = new WebSocket("ws://16.171.200.60:5001/ws/{{table_id}}");
 var user_id = getCookieValue("user_id")
 console.log(user_id)
 var heading = $("#myHeading");
