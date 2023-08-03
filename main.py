@@ -8,6 +8,7 @@ from fastapi.templating import Jinja2Templates
 import uuid
 import json
 import time
+import asyncio
 
 app = FastAPI()
 tables = {} 
@@ -201,7 +202,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                     game.next_player_to_play = game.start_player_index
                     game.set_next_player()
                     #revisamos que vuelva a jugar el jugador qsiguiento.
-                    time.sleep(3)
+                    await asyncio.sleep(3)
                     await manager.broadcast({"turn": False, "next_round": True})
                     await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
 
