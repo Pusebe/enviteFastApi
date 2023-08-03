@@ -35,8 +35,7 @@ async def get_table(request: Request, response: Response, table_id:int):
     user_id = (request.cookies.get("user_id"))
     if user_id is None:
         return RedirectResponse("/")
-    print(table_id)
-    print(tables)
+
     if table_id not in tables:
         tables[table_id] = Game([])
 
@@ -106,7 +105,6 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
             card_value = data.get("card")
 
             if data.get("reset"):
-                print("si entró aquí eres un desgraciado")
                 del tables[table_id]
                 game_started = False
                 users_connected_to_socket = {}
