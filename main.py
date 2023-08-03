@@ -85,7 +85,7 @@ class ConnectionManager:
 
 
 manager = ConnectionManager()
-connected_users_per_table = {}
+users_connected_to_socket = {}
 game_started = False
 game = None
 new_set = False
@@ -94,25 +94,22 @@ card = None
 @app.websocket("/ws/{table_id}")
 async def websocket_endpoint(websocket: WebSocket, table_id:int):
     await manager.connect(websocket)
+    global users_connected_to_socket 
     global game_started
     global game
     global new_set
     global card
     try:
-        #ordeno los usuarios conectados por mesa
-        if table_id not in connected_users_per_table:
-            connected_users_per_table[table_id] = set()
-
-        connected_users_per_table[table_id].add(websocket)
         while True:
             data = await websocket.receive_json()
             user_id = data.get("user_id")
             card_value = data.get("card")
 
             if data.get("reset"):
+                print("si entró aquí eres un desgraciado")
                 del tables[table_id]
                 game_started = False
-                connected_users_per_table[table_id] = set()
+                users_connected_to_socket = {}
                 await manager.broadcast({"reload":True})
                 await manager.disconnect_all()
                 break
@@ -121,11 +118,11 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
 
             #comprueba si está la id y si no está la añade
             if user_id:
-                if user_id not in connected_users_per_table[table_id]:
-                    connected_users_per_table[table_id] = websocket
+                if user_id not in users_connected_to_socket:
+                    users_connected_to_socket[user_id] = websocket
 
             #comprobamos si el juego está iniciado, y sino, lo inicializamos   
-            if not game_started and len(connected_users_per_table[table_id]) == 2:
+            if not game_started and len(users_connected_to_socket) == 2:
                 game = tables[table_id]
                 game.create_teams()
                 game.set_next_player()
@@ -137,18 +134,18 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                 if not (game.team1.has_won_round(game.points_to_win_round) or game.team2.has_won_round(game.points_to_win_round)): 
                     if new_set:
                         #si le toca al jugador de este websocket mandamos turn true para saber que le toca a él
-                        await manager.send_personal_message({"turn": True}, connected_users_per_table[table_id].get(game.players_order[0].name))
+                        await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
                         
                         players_id = [player.name for player in game.players]
                         await manager.broadcast({"players": players_id})
                         await manager.broadcast({"vira":f"{(game.deck.vira.value + game.deck.vira.suit).lower()}"})
                         for player in game.players_order:
-                            await manager.send_personal_message({"hand": player.json_hand()}, connected_users_per_table[table_id][player.name])
+                            await manager.send_personal_message({"hand": player.json_hand()}, users_connected_to_socket[player.name])
                         
                         new_set = False
                     
                     #recibe la info de la carta jugada de cada jugador
-                    if connected_users_per_table[table_id].get(game.players_order[0].name) == websocket and card:
+                    if users_connected_to_socket.get(game.players_order[0].name) == websocket and card:
                         for player in  game.players_order:
                             #si eres el primero de players order te toca jugar
                             if player.name == game.players_order[0].name:
@@ -157,12 +154,12 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                                 await manager.broadcast({"player": player.name,"card_played" : card_played.value + card_played.suit})
                                 print(f"el jugador jugó {card_played.value} de {card_played.suit}")
                                 #ya jugaste asi que le mando al cliente que ya no es tu turno
-                                await manager.send_personal_message({"turn": False}, connected_users_per_table[table_id].get(game.players_order[0].name))
+                                await manager.send_personal_message({"turn": False}, users_connected_to_socket.get(game.players_order[0].name))
                         card = None
                         #manera de rotar la lista
                         game.players_order.append(game.players_order.pop(0))
                         #una vez rotada la lista mandamos de nuevo el turno ok
-                        await manager.send_personal_message({"turn": True}, connected_users_per_table[table_id].get(game.players_order[0].name))
+                        await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
 
                     if len(game.players) == len(game.cards_played):
                         highest_card = game.determine_highest_card(game.cards_played)
@@ -178,7 +175,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                        
                        #el que gana la mano le mandamos un mensajito cambiando el turno a true
                         await manager.broadcast({"turn": False})
-                        await manager.send_personal_message({"turn": True}, connected_users_per_table[table_id].get(game.players_order[0].name))
+                        await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
                        
                     if game.team1.has_won_round(game.points_to_win_round):
                         game.team1.increment_sets_won()
@@ -205,9 +202,9 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                     game.next_player_to_play = game.start_player_index
                     game.set_next_player()
                     #revisamos que vuelva a jugar el jugador qsiguiento.
-                    await asyncio.sleep(3)
+                    await asyncio.time.sleep(3)
                     await manager.broadcast({"turn": False, "next_round": True})
-                    await manager.send_personal_message({"turn": True}, connected_users_per_table[table_id].get(game.players_order[0].name))
+                    await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
 
                 if (game.team1.has_won_game(game.points_to_win_game) or game.team2.has_won_game(game.points_to_win_game)):
                     game.reset_sets()
@@ -221,14 +218,14 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
     except WebSocketDisconnect:
         manager.disconnect(websocket)
         disconnected_user_id = None
-        for user_id, ws in connected_users_per_table[table_id].items():
+        for user_id, ws in users_connected_to_socket.items():
             if ws == websocket:
                 disconnected_user_id = user_id
                 break
         if disconnected_user_id:
-            del connected_users_per_table[table_id][disconnected_user_id]
+            del users_connected_to_socket[disconnected_user_id]
 
-        if len(connected_users_per_table[table_id]) < 0:
+        if len(users_connected_to_socket) < 0:
             await manager.broadcast({f"Client #{disconnected_user_id} left the chat": "adiós"})
         new_set = True
 
