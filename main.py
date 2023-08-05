@@ -18,20 +18,23 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Configurar la ubicación de las plantillas
 templates = Jinja2Templates(directory="templates")
 
+def set_user_id(request, response):
+    if not request.cookies.get("user_id"): #if is the first time of the user here, give them a cookie id
+        user_id = str(uuid.uuid4())
+        response.set_cookie(key="user_id", value=user_id)
+
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     
     response = templates.TemplateResponse("index.html", {"request": request})
 
-    if not request.cookies.get("user_id"): #if is the first time of the user here, give them a cookie id
-        user_id = str(uuid.uuid4())
-        response.set_cookie(key="user_id", value=user_id)
+    set_user_id(request, response)
 
     return response
 
 @app.get("/mesa/{table_id}", response_class=HTMLResponse)
 async def get_table(request: Request, response: Response, table_id:int):
-
+    
     user_id = (request.cookies.get("user_id"))
     if user_id is None:
         return RedirectResponse("/")
