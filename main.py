@@ -101,8 +101,9 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
     global game
     global new_set
     global card
+        
     try:
-        while True:
+        while not websocket.closed:
             data = await websocket.receive_json()
             user_id = data.get("user_id")
             card_value = data.get("card")
