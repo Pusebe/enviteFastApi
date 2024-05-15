@@ -147,7 +147,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                     await websocket.close()
                     return
             #comprobamos si el juego está iniciado, y sino, lo inicializamos   
-            if not game_started and len(game.players) == 2:
+            if not game_started.get(table_id) and len(game.players) == 2:
                 game_started[table_id] = True
 
                 game.create_teams()
