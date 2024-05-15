@@ -98,7 +98,7 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 users_connected_to_socket = {}
-game_started = False
+game_started = {}
 game = None
 new_set = False
 card = None
@@ -129,7 +129,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
 
             if data.get("reset"):
                 del tables[table_id]
-                game_started = False
+                del game_started[table_id]
                 users_connected_to_socket = {}
                 await manager.broadcast({"reload":True})
                 await manager.disconnect_all()
@@ -149,7 +149,6 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                 game.create_teams()
                 game.set_next_player()
                 game.prepare_deck_and_deal()
-                game_started = True  
                 new_set= True
 
                 
