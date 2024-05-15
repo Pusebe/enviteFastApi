@@ -75,10 +75,8 @@ class ConnectionManager:
         self.active_connections.append(websocket)
 
     def disconnect(self, websocket: WebSocket):
-        if self.active_connections:
+        if websocket in self.active_connections:
             self.active_connections.remove(websocket)
-        else:
-            pass
 
     async def send_personal_message(self, message: str, websocket: WebSocket):
         if websocket is not None and websocket.client_state == WebSocketState.CONNECTED:
@@ -86,10 +84,14 @@ class ConnectionManager:
 
     async def broadcast(self, message: str):
         for connection in self.active_connections:
-            await connection.send_json(message)
+            try:
+                await connection.send_json(message)
+            except RuntimeError:
+                # La conexión WebSocket ya ha sido cerrada, omitir
+                pass
 
     async def disconnect_all(self):
-    # Cerrar todas las conexiones de websockets activas
+        # Cerrar todas las conexiones de websockets activas
         for websocket in self.active_connections:
             if websocket.client_state == WebSocketState.CONNECTED:
                 await websocket.close()
