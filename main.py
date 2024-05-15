@@ -91,7 +91,7 @@ class ConnectionManager:
     async def disconnect_all(self):
     # Cerrar todas las conexiones de websockets activas
         for websocket in self.active_connections:
-            if websocket in self.active_connections:
+            if websocket.client_state == WebSocketState.CONNECTED:
                 await websocket.close()
         self.active_connections.clear()
 
