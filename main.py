@@ -81,7 +81,7 @@ class ConnectionManager:
             pass
 
     async def send_personal_message(self, message: str, websocket: WebSocket):
-        if websocket.client_state == WebSocketState.CONNECTED:
+        if websocket is not None and websocket.client_state == WebSocketState.CONNECTED:
             await websocket.send_json(message)
 
     async def broadcast(self, message: str):
