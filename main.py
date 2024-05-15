@@ -143,8 +143,9 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                     users_connected_to_socket[user_id] = websocket
 
             #comprobamos si el juego está iniciado, y sino, lo inicializamos   
-            if not game_started and len(users_connected_to_socket) == 2:
-                game = tables[table_id]
+            if not game_started and len(game.players) == 2:
+                game_started[table_id] = True
+
                 game.create_teams()
                 game.set_next_player()
                 game.prepare_deck_and_deal()
@@ -152,7 +153,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                 new_set= True
 
                 
-            if game_started:                    
+            if game_started.get(table_id, False):                    
                 if not (game.team1.has_won_round(game.points_to_win_round) or game.team2.has_won_round(game.points_to_win_round)): 
                     if new_set:
                         #si le toca al jugador de este websocket mandamos turn true para saber que le toca a él
@@ -249,7 +250,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
 
         #if len(users_connected_to_socket) < 0:
          #   await manager.broadcast({f"Client #{disconnected_user_id} left the chat": "adiós"})
-        new_set = True
+        new_set= True
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=5001)
