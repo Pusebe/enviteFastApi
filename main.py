@@ -50,15 +50,6 @@ async def get_table(request: Request, response: Response, table_id:int):
     if not user_exists:
         game.players.append(Player(user_id))
 
-    if len(game.players) == 2:
-        # Verificar si el juego ya ha comenzado en esta mesa
-        if not game_started.get(table_id):
-            game_started[table_id] = True
-            # Iniciar el juego en esta mesa
-            game.create_teams()
-            game.set_next_player()
-            game.prepare_deck_and_deal()
-
     if len(game.players) > 2:
         return "Vaya, parece que ya empezó la partida"
 
@@ -149,14 +140,12 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
             #comprobamos si el juego está iniciado, y sino, lo inicializamos   
             if not game_started.get(table_id) and len(game.players) == 2:
                 print("ahora si se creo la mierda esta")
-                time.sleep(2)
                 game_started[table_id] = True
                 game.create_teams()
                 game.set_next_player()
                 game.prepare_deck_and_deal()
                 new_set= True
-
-                
+           
             if game_started.get(table_id, False):                    
                 if not (game.team1.has_won_round(game.points_to_win_round) or game.team2.has_won_round(game.points_to_win_round)): 
                     if new_set:
