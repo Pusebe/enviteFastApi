@@ -121,8 +121,6 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
             return
         
         while True:
-
-
             data = await websocket.receive_json()
             user_id = data.get("user_id")
             card_value = data.get("card")
@@ -139,9 +137,13 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
 
             #comprueba si está la id y si no está la añade
             if user_id:
-                if user_id not in users_connected_to_socket:
+                websocket_user = users_connected_to_socket.get(user_id)
+                if websocket_user is None or websocket_user == websocket:
                     users_connected_to_socket[user_id] = websocket
-
+                else:
+                    # Si hay otro WebSocket asociado a este usuario, cierra esta conexión
+                    await websocket.close()
+                    return
             #comprobamos si el juego está iniciado, y sino, lo inicializamos   
             if not game_started and len(game.players) == 2:
                 game_started[table_id] = True
