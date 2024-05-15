@@ -2,6 +2,7 @@ import uvicorn as uvicorn
 from game.game import Game
 from game.player import Player
 from fastapi import FastAPI, Request, Response, WebSocket,  WebSocketDisconnect
+from starlette.websockets import WebSocketState
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -72,7 +73,8 @@ class ConnectionManager:
             pass
 
     async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_json(message)
+        if websocket.client_state == WebSocketState.CONNECTED:
+            await websocket.send_json(message)
 
     async def broadcast(self, message: str):
         for connection in self.active_connections:
@@ -103,7 +105,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
     global card
         
     try:
-        while not websocket.closed:
+        while True:
             data = await websocket.receive_json()
             user_id = data.get("user_id")
             card_value = data.get("card")
