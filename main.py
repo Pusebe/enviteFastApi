@@ -50,11 +50,19 @@ async def get_table(request: Request, response: Response, table_id:int):
     if not user_exists:
         game.players.append(Player(user_id))
 
+    if len(game.players) == 2:
+        # Verificar si el juego ya ha comenzado en esta mesa
+        if not game_started.get(table_id):
+            game_started[table_id] = True
+            # Iniciar el juego en esta mesa
+            game.create_teams()
+            game.set_next_player()
+            game.prepare_deck_and_deal()
+
     if len(game.players) > 2:
         return "Vaya, parece que ya empezó la partida"
 
-
-    response = templates.TemplateResponse("table.html", {"request": request, "table_id": table_id})  #aquí se le mandarán los datos de game correspondiente de cada mesa  
+    response = templates.TemplateResponse("table.html", {"request": request, "table_id": table_id})
     return response
 
 
@@ -105,7 +113,16 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
     global card
         
     try:
+        if table_id in tables:
+            game = tables[table_id]
+        else:
+        # Si el WebSocket se conecta a una mesa que no existe, cerramos la conexión
+            await websocket.close()
+            return
+        
         while True:
+
+
             data = await websocket.receive_json()
             user_id = data.get("user_id")
             card_value = data.get("card")
@@ -133,6 +150,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                 game.prepare_deck_and_deal()
                 game_started = True  
                 new_set= True
+
                 
             if game_started:                    
                 if not (game.team1.has_won_round(game.points_to_win_round) or game.team2.has_won_round(game.points_to_win_round)): 
@@ -229,8 +247,8 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
         if disconnected_user_id:
             del users_connected_to_socket[disconnected_user_id]
 
-        if len(users_connected_to_socket) < 0:
-            await manager.broadcast({f"Client #{disconnected_user_id} left the chat": "adiós"})
+        #if len(users_connected_to_socket) < 0:
+         #   await manager.broadcast({f"Client #{disconnected_user_id} left the chat": "adiós"})
         new_set = True
 
 if __name__ == "__main__":
