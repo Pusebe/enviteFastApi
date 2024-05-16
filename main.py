@@ -218,10 +218,11 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                     game.next_player_to_play = game.start_player_index
                     game.set_next_player()
                     #enviamos los resultados
-                    #await manager.broadcast({"chicos": {"team1": game.team1.games_won, "team2":game.team2.games_won} , "piedras": {"team1":game.team1.sets_won, "team2":game.team2.sets_won}})
+                    await manager.broadcast({"chicos": {"team1": game.team1.games_won, "team2":game.team2.games_won} , "piedras": {"team1":game.team1.sets_won, "team2":game.team2.sets_won}})
                     #revisamos que vuelva a jugar el jugador qsiguiento.
                     await manager.broadcast({"turn": False})
                     await asyncio.sleep(3) 
+                    print("ahora si estoy aki")
                     await manager.broadcast({"next_round": True})
                     await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
 
