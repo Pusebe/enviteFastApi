@@ -218,6 +218,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                     #revisamos que vuelva a jugar el jugador qsiguiento.
                     await manager.broadcast({"turn": False, "next_round": True})
                     await asyncio.sleep(3) 
+                    await manager.broadcast({"next_round": True})
                     await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
 
                 if (game.team1.has_won_game(game.points_to_win_game) or game.team2.has_won_game(game.points_to_win_game)):
