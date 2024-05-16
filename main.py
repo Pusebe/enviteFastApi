@@ -104,7 +104,6 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
     global game
     global new_set
     global card
-    first_hand_played = False
     try:
         if table_id in tables:
             game = tables[table_id]
@@ -145,12 +144,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                 game.prepare_deck_and_deal()
                 new_set= True
            
-            if game_started.get(table_id, False):    
-                if not first_hand_played:  # Skip wait for first hand
-                    first_hand_played = True
-                else:
-                    await asyncio.sleep(3)  # Wait for 3 seconds for subsequent hands
-                                
+            if game_started.get(table_id, False):                                    
                 if not (game.team1.has_won_round(game.points_to_win_round) or game.team2.has_won_round(game.points_to_win_round)): 
                     if new_set:
                         #si le toca al jugador de este websocket mandamos turn true para saber que le toca a él
@@ -223,8 +217,8 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                     game.set_next_player()
                     #revisamos que vuelva a jugar el jugador qsiguiento.
                     await manager.broadcast({"turn": False, "next_round": True})
-                    await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
                     await asyncio.sleep(3) 
+                    await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
 
                 if (game.team1.has_won_game(game.points_to_win_game) or game.team2.has_won_game(game.points_to_win_game)):
                     game.reset_sets()
