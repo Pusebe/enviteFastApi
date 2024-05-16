@@ -204,9 +204,6 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                     if game.team2.has_won_set(game.points_to_win_set):
                         game.team2.increment_games_won()
 
-                    
-         
-
                 if (game.team1.has_won_round(game.points_to_win_round) or game.team2.has_won_round(game.points_to_win_round)):
                     print(f"El equipo 1 tiene {game.team1.games_won} chicos.\nY el equipo 2 tiene {game.team2.games_won} chicos.\n")
                     new_set = True
@@ -222,13 +219,14 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                     #revisamos que vuelva a jugar el jugador qsiguiento.
                     await manager.broadcast({"turn": False})
                     await asyncio.sleep(3) 
-                    print("ahora si estoy aki")
                     await manager.broadcast({"next_round": True})
                     await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
 
                     if (game.team1.has_won_set(game.points_to_win_set) or game.team2.has_won_set(game.points_to_win_set)):
                         print("alguno ganó los sets ya")
                         game.reset_sets()
+                        await manager.broadcast({"chicos": {"team1": game.team1.games_won, "team2":game.team2.games_won} , "piedras": {"team1":game.team1.sets_won, "team2":game.team2.sets_won}})
+
 
                     if game.team1.has_won_game(game.points_to_win_game):
                         print("El equipo 1 gana la partida.")
