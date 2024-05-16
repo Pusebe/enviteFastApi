@@ -207,7 +207,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                     
          
 
-                else:
+                if (game.team1.has_won_round(game.points_to_win_round) or game.team2.has_won_round(game.points_to_win_round)):
                     print(f"El equipo 1 tiene {game.team1.games_won} chicos.\nY el equipo 2 tiene {game.team2.games_won} chicos.\n")
                     new_set = True
                     game.reset_rounds()
