@@ -99,3 +99,8 @@ class Game:
 
     def set_next_player(self):
         self.players_order = self.players[self.next_player_to_play:] + self.players[:self.next_player_to_play]
+
+
+    def reset_games(self):
+        self.team1.games_won = 0
+        self.team2.games_won = 0
