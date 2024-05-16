@@ -139,7 +139,6 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                     return
             #comprobamos si el juego está iniciado, y sino, lo inicializamos   
             if not game_started.get(table_id) and len(game.players) == 2:
-                print("ahora si se creo la mierda esta")
                 game_started[table_id] = True
                 game.create_teams()
                 game.set_next_player()
@@ -218,9 +217,9 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                     game.next_player_to_play = game.start_player_index
                     game.set_next_player()
                     #revisamos que vuelva a jugar el jugador qsiguiento.
-                    await asyncio.sleep(3) 
                     await manager.broadcast({"turn": False, "next_round": True})
                     await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
+                    await asyncio.sleep(3) 
 
                 if (game.team1.has_won_game(game.points_to_win_game) or game.team2.has_won_game(game.points_to_win_game)):
                     game.reset_sets()
