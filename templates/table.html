@@ -6,10 +6,10 @@
   <div class="h3">Mesa 1 - 2 pa 2</div>
   <div class="row justify-content-center" id="main-container">
       <div class="col-2" id="player1">
-          <div id="yourTurn"></div> <!-- Elemento añadido para mostrar "TE TOCA" -->
-          <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="1" alt="card1">
-          <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="2" alt="card2">
-          <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="3" alt="card3">
+        <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="1" alt="card1">
+        <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="2" alt="card2">
+        <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="3" alt="card3">
+        <div id="yourTurn"></div> <!-- Elemento añadido para mostrar "TE TOCA" -->
       </div>
       <div class="col-2" id="hand-player1">
           <div id="played_cards"></div>
@@ -20,15 +20,17 @@
       <div class="col-2" id="hand-player2">
       </div>
       <div class="col-2" id="player2">
-          <div id="hisTurn"></div> <!-- Elemento añadido para mostrar "LE TOCA" -->
-          <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="4" alt="card4">
-          <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="5" alt="card5">
-          <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="6" alt="card6">
+        <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="4" alt="card4">
+        <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="5" alt="card5">
+        <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="6" alt="card6">
+        <div id="hisTurn"></div> <!-- Elemento añadido para mostrar "LE TOCA" -->
       </div>
   </div>
   <div class="row">
       <div class="col">
+        <div id="score-player1"></div>
           <div id="score">Piedras</div>
+        <div id="score-player2"></div>
       </div>
   </div>
   <div class="row justify-content-center mt-3"> <!-- Nuevo div para centrar el botón y añadir margen superior -->
@@ -61,6 +63,7 @@ function orderPlayers(players){
     if ($("#" + playerId).length > 0) {
       $("#" + playerId).attr("id", value);
       $("#hand-" + playerId).attr("id", "hand-"+value);
+      $("#score-" + playerId).attr("id", "score-"+value); // esto habrá que cambiarlo a equipoooooooooooooo no a individuos
     } else {
       // Crea un nuevo elemento con la ID y el valor correspondiente
       $("<div>").attr("id", playerId).text(value).appendTo("#players-container");
@@ -118,6 +121,12 @@ function orderPlayers(players){
     }
     //comprobamos si ha gnado alguna piedra o chico alguien y lo comunicamos
     if(message.chicos !== undefined  && message.chicos !== null){
+      let hand = JSON.parse(message.hand);
+        for (let i = 0; i < (hand.length); i++) {
+          path = "/static/img/"+hand[i].value + hand[i].suit+".png"
+          document.getElementById(i+1).src = path.toLowerCase();
+        }
+
       $("#score").text("Piedras "+ message.piedras.team1 + " - "+ message.piedras.team2 ) 
     }
     //dibujamos la carta cuando el rival juega
