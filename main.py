@@ -70,12 +70,14 @@ async def reload(request: Request):
     global game 
     global new_set 
     global card 
-
-
-        # Cerrar todas las conexiones de WebSocket activas
+     # Cerrar todas las conexiones de WebSocket activas
     for websocket in manager.active_connections:
         if websocket.client_state == WebSocketState.CONNECTED:
-            await websocket.close()
+            try:
+                await websocket.close()
+            except RuntimeError:
+                # La conexión WebSocket ya ha sido cerrada, omitir
+                pass
     manager.active_connections.clear()
 
     # Reiniciar los datos de las mesas y las conexiones de usuarios
