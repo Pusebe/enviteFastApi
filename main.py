@@ -177,8 +177,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                         #si le toca al jugador de este websocket mandamos turn true para saber que le toca a él
                         await manager.broadcast({"turn": False})
                         await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
-                        players_id = [f"Jugador {i+1}" for i, _ in enumerate(game.players)]
-                        #players_id = [player.name for player in game.players]
+                        players_id = [player.name for player in game.players]
                         await manager.broadcast({"players": players_id})
                         await manager.broadcast({"vira":f"{(game.deck.vira.value + game.deck.vira.suit).lower()}"})
                         for player in game.players_order:
