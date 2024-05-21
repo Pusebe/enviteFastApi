@@ -175,6 +175,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                 if not (game.team1.has_won_round(game.points_to_win_round) or game.team2.has_won_round(game.points_to_win_round)): 
                     if new_set:
                         #si le toca al jugador de este websocket mandamos turn true para saber que le toca a él
+                        await manager.broadcast({"turn": False})
                         await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
                         
                         players_id = [player.name for player in game.players]
