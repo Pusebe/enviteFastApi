@@ -8,6 +8,7 @@
 <div class="h3">Mesa 1 - 2 pa 2</div>
 <div class="row justify-content-center" id="main-container">
   <div class="col-2" id="player1">
+      <div id="yourTurn" class="h4"></div> <!-- Elemento añadido para mostrar "TE TOCA" -->
       <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="1" alt="card1">
       <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="2" alt="card2">
       <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="3" alt="card3">
@@ -23,6 +24,7 @@
     
   </div>
   <div class="col-2" id="player2">
+    <div id="hisTurn" class="h4"></div> <!-- Elemento añadido para mostrar "LE TOCA" -->
     <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="4" alt="card4">
     <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="5" alt="card5">
     <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="6" alt="card6">
@@ -100,9 +102,13 @@ function orderPlayers(players){
       my_turn = message.turn;
       if(my_turn){
         response = "Tu turno"
+        $('#yourTurn').text('TE TOCA'); // Actualiza el mensaje para indicar el turno
+        $('#hisTurn').text(''); // Actualiza el mensaje para indicar el turno
       }
       else{
         response = "No te toca"
+        $('#yourTurn').text(''); // Actualiza el mensaje para indicar el turno
+        $('#hisTurn').text('LE TOCA'); // Actualiza el mensaje para indicar el turno
       }
       console.log(response)
     }
