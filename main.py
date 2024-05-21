@@ -214,9 +214,9 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                         print(f"La vira es el {game.deck.vira.value} de {game.deck.vira.suit}")
                         print(f"\n{game.winning_player.name} gana la mano con {highest_card.value} de {highest_card.suit}\n")
                         game.cards_played = []
-
+                        print("le tocaria " + game.start_player_index)
                         game.set_next_player()
-                       
+                        print("se movio la lita y ahora le tocaría: " + game.start_player_index)
                        #el que gana la mano le mandamos un mensajito cambiando el turno a true
                         await manager.broadcast({"turn": False})
                         await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
@@ -239,13 +239,17 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                 if (game.team1.has_won_round(game.points_to_win_round) or game.team2.has_won_round(game.points_to_win_round)):
                     print(f"El equipo 1 tiene {game.team1.games_won} chicos.\nY el equipo 2 tiene {game.team2.games_won} chicos.\n")
                     new_set = True
+                    print("se acabó el set y le tocaría a " + game.start_player_index)
+
                     game.reset_rounds()
+
                     game.prepare_deck_and_deal()
                     #esta parte del código es un poco lio, y no me acalro ni yo, establezco el indice del jugador que comienza en +1 y luego igualo eso a next player to play, y por ultimo lo establezco con la funcion que rota la lista de orden de jguadores
                     #mucho lio, pero funciona
                     game.start_player_index = (game.start_player_index + 1) % len(game.players)
                     game.next_player_to_play = game.start_player_index
                     game.set_next_player()
+                    print("se acabó el set y le tocaría a pero cambió a " + game.start_player_index)
                     print("se reinició el set y le toca a: " + game.players_order[0].name)
                     print(game.start_player_index)
                     #enviamos los resultados
