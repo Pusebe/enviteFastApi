@@ -60,6 +60,8 @@ async def get_table(request: Request, response: Response, table_id:int):
 @app.get("/reload", response_class=HTMLResponse)
 async def reload(request: Request):
     global tables
+    global users_connected_to_socket
+    users_connected_to_socket = {}
     tables = {}
 
     response = templates.TemplateResponse("index.html", {"request": request})
