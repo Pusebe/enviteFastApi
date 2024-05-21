@@ -181,11 +181,11 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                         await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
                         players_id = [player.name for player in game.players]
                         print(players_id)
+                        print(game.start_player_index)
                         await manager.broadcast({"players": players_id})
                         await manager.broadcast({"vira":f"{(game.deck.vira.value + game.deck.vira.suit).lower()}"})
                         for player in game.players_order:
                             await manager.send_personal_message({"hand": player.json_hand()}, users_connected_to_socket[player.name])
-                        
                         new_set = False
                     
                     #recibe la info de la carta jugada de cada jugador
@@ -247,6 +247,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                     game.next_player_to_play = game.start_player_index
                     game.set_next_player()
                     print("se reinició el set y le toca a: " + game.players_order[0].name)
+                    print(game.start_player_index)
                     #enviamos los resultados
                     await manager.broadcast({"chicos": {"team1": game.team1.games_won, "team2":game.team2.games_won} , "piedras": {"team1":game.team1.sets_won, "team2":game.team2.sets_won}})
                     #revisamos que vuelva a jugar el jugador qsiguiento.
