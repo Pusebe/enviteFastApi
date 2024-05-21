@@ -201,6 +201,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                         game.players_order.append(game.players_order.pop(0))
                         #una vez rotada la lista mandamos de nuevo el turno ok
                         await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
+                        print("Ya tiro una carta y ahora le toca a: " + game.players_order[0])
 
                     if len(game.players) == len(game.cards_played):
                         highest_card = game.determine_highest_card(game.cards_played)
@@ -217,6 +218,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                        #el que gana la mano le mandamos un mensajito cambiando el turno a true
                         await manager.broadcast({"turn": False})
                         await manager.send_personal_message({"turn": True}, users_connected_to_socket.get(game.players_order[0].name))
+                        print("Ya ganó la mano y le toca a: " + game.players_order[0])
                                       
                     if game.team1.has_won_round(game.points_to_win_round):
                         game.team1.increment_sets_won()
@@ -242,6 +244,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
                     game.start_player_index = (game.start_player_index + 1) % len(game.players)
                     game.next_player_to_play = game.start_player_index
                     game.set_next_player()
+                    print("se reinició el set y le toca a: " + game.players_order[0])
                     #enviamos los resultados
                     await manager.broadcast({"chicos": {"team1": game.team1.games_won, "team2":game.team2.games_won} , "piedras": {"team1":game.team1.sets_won, "team2":game.team2.sets_won}})
                     #revisamos que vuelva a jugar el jugador qsiguiento.
