@@ -43,7 +43,7 @@ class Game:
             self.team2.increment_rounds_won()
 
         self.round_num += 1
-        self.start_player_index = (self.start_player_index + 1) % len(self.players)
+        #self.start_player_index = (self.start_player_index + 1) % len(self.players)
 
     def determine_highest_card(self, cards):
         highest_card = cards[0]
@@ -94,6 +94,10 @@ class Game:
         self.team2.sets_won = 0
     
     def reset_rounds(self):
+          #esta parte del código es un poco lio, y no me acalro ni yo, establezco el indice del jugador que comienza en +1 y luego igualo eso a next player to play, y por ultimo lo establezco con la funcion que rota la lista de orden de jguadores
+           #mucho lio, pero funciona
+        self.start_player_index = (self.start_player_index + 1) % len(self.players)
+        self.next_player_to_play = self.start_player_index
         self.team1.rounds_won = 0
         self.team2.rounds_won = 0
 
