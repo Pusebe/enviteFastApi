@@ -57,6 +57,14 @@ async def get_table(request: Request, response: Response, table_id:int):
     return response
 
 
+@app.get("/reload", response_class=HTMLResponse)
+async def reload(request: Request):
+    global tables
+    tables = {}
+
+    response = templates.TemplateResponse("index.html", {"request": request})
+    return response
+
 class ConnectionManager:
     def __init__(self):
         self.active_connections: list[WebSocket] = []
