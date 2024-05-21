@@ -13,6 +13,11 @@ import asyncio
 
 app = FastAPI()
 tables = {} 
+users_connected_to_socket = {}
+game_started = {}
+game = None
+new_set = False
+card = None
 
 # Montar la carpeta "static" para servir los archivos estáticos
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -61,8 +66,17 @@ async def get_table(request: Request, response: Response, table_id:int):
 async def reload(request: Request):
     global tables
     global users_connected_to_socket
-    users_connected_to_socket = {}
+
+        # Cerrar todas las conexiones de WebSocket activas
+    for websocket in manager.active_connections:
+        if websocket.client_state == WebSocketState.CONNECTED:
+            await websocket.close()
+    manager.active_connections.clear()
+
+    # Reiniciar los datos de las mesas y las conexiones de usuarios
     tables = {}
+    users_connected_to_socket = {}
+
 
     response = templates.TemplateResponse("index.html", {"request": request})
     return response
@@ -98,13 +112,7 @@ class ConnectionManager:
                 await websocket.close()
         self.active_connections.clear()
 
-
 manager = ConnectionManager()
-users_connected_to_socket = {}
-game_started = {}
-game = None
-new_set = False
-card = None
 
 @app.websocket("/ws/{table_id}")
 async def websocket_endpoint(websocket: WebSocket, table_id:int):
