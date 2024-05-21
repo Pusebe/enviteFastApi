@@ -167,7 +167,7 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
             if not game_started.get(table_id) and len(game.players) == 2:
                 game_started[table_id] = True
                 game.create_teams()
-                #game.set_next_player()
+                game.set_next_player()
                 game.prepare_deck_and_deal()
                 new_set= True
            
