@@ -66,6 +66,11 @@ async def get_table(request: Request, response: Response, table_id:int):
 async def reload(request: Request):
     global tables
     global users_connected_to_socket
+    global game_started
+    global game 
+    global new_set 
+    global card 
+
 
         # Cerrar todas las conexiones de WebSocket activas
     for websocket in manager.active_connections:
@@ -76,6 +81,10 @@ async def reload(request: Request):
     # Reiniciar los datos de las mesas y las conexiones de usuarios
     tables = {}
     users_connected_to_socket = {}
+    game_started = {}
+    game = None
+    new_set = False
+    card = None
 
 
     response = templates.TemplateResponse("index.html", {"request": request})
