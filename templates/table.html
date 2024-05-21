@@ -1,39 +1,37 @@
 {% extends "base.html" %}
 
 {% block content%}
-
-
-<div class="container-fluid  mt-5 text-center vh-100" >
-<div class="h1" id="myHeading">Donde Cuadre</div>
-<div class="h3">Mesa 1 - 2 pa 2</div>
-<div class="row justify-content-center" id="main-container">
-  <div class="col-2" id="player1">
-      <div id="yourTurn" class="h4"></div> <!-- Elemento añadido para mostrar "TE TOCA" -->
-      <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="1" alt="card1">
-      <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="2" alt="card2">
-      <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="3" alt="card3">
-
-   </div>
-  <div class="col-2" id="hand-player1">
-    <div id="played_cards"></div>
+<div class="container-fluid mt-5 text-center vh-100">
+  <div class="h1" id="myHeading">Donde Cuadre</div>
+  <div class="h3">Mesa 1 - 2 pa 2</div>
+  <div class="row justify-content-center" id="main-container">
+      <div class="col-2" id="player1">
+          <div id="yourTurn" class="h4"></div> <!-- Elemento añadido para mostrar "TE TOCA" -->
+          <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="1" alt="card1">
+          <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="2" alt="card2">
+          <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="3" alt="card3">
+      </div>
+      <div class="col-2" id="hand-player1">
+          <div id="played_cards"></div>
+      </div>
+      <div class="col-2">
+          <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="vira" alt="vira">
+      </div>
+      <div class="col-2" id="hand-player2">
+      </div>
+      <div class="col-2" id="player2">
+          <div id="hisTurn" class="h4"></div> <!-- Elemento añadido para mostrar "LE TOCA" -->
+          <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="4" alt="card4">
+          <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="5" alt="card5">
+          <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="6" alt="card6">
+      </div>
   </div>
-  <div class="col-2">
-    <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="vira" alt="vira">
-  </div>
-  <div class="col-2" id="hand-player2">
-    
-  </div>
-  <div class="col-2" id="player2">
-    <div id="hisTurn" class="h4"></div> <!-- Elemento añadido para mostrar "LE TOCA" -->
-    <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="4" alt="card4">
-    <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="5" alt="card5">
-    <img src="/static/img/carta-boca-abajo.png" class="img-fluid" id="6" alt="card6">
+  <div class="row">
+      <div class="col">
+          <div id="score">Piedras</div>
+      </div>
   </div>
 </div>
-<div class="row">
-  <div class="col">
-    <div id="score">Piedras</div>
-  </div>
 </div>
 <button type="button" class="btn btn-primary" id="reset">Reset</button>
 </div>
