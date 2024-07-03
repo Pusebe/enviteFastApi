@@ -47,9 +47,10 @@ async def get_table(request: Request, response: Response, table_id:int):
 
     if table_id not in tables:
         tables[table_id] = Game([])
-        print("El game está creado y es:")
-        print(game)
+        
     game = tables[table_id]
+    print("El game está creado y es:")
+    print(game)
     
     user_exists = any(user_id in player.name for player in game.players)
 
