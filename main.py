@@ -47,7 +47,8 @@ async def get_table(request: Request, response: Response, table_id:int):
 
     if table_id not in tables:
         tables[table_id] = Game([])
-
+        print("El game está creado y es:")
+        print(game)
     game = tables[table_id]
     
     user_exists = any(user_id in player.name for player in game.players)
@@ -108,7 +109,7 @@ class ConnectionManager:
     async def broadcast(self, message: str):
         for connection in self.active_connections:
             try:
-                if websocket is not None and websocket.client_state == WebSocketState.CONNECTED:
+                if connection is not None and connection.client_state == WebSocketState.CONNECTED:
                     await connection.send_json(message)
             except RuntimeError:
                 # La conexión WebSocket ya ha sido cerrada, omitir
@@ -133,8 +134,8 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
             game = tables[table_id]
         else:
         # Si el WebSocket se conecta a una mesa que no existe, cerramos la conexión
-            print("depurando que no hay mesa")
-            print(table_id)
+            print("depurando que no hay mesa y el game es")
+            print(game)
             await websocket.close()
             return
         
