@@ -40,6 +40,7 @@ async def read_root(request: Request):
 
 @app.get("/mesa/{table_id}", response_class=HTMLResponse)
 async def get_table(request: Request, response: Response, table_id:int):
+    global tables, users_connected_to_socket, game_started, game, new_set, card
     
     user_id = (request.cookies.get("user_id"))
     if user_id is None:
@@ -64,12 +65,8 @@ async def get_table(request: Request, response: Response, table_id:int):
 
 @app.get("/reload", response_class=HTMLResponse)
 async def reload(request: Request):
-    global tables
-    global users_connected_to_socket
-    global game_started
-    global game 
-    global new_set 
-    global card 
+
+    global tables, users_connected_to_socket, game_started, game, new_set, card
      # Cerrar todas las conexiones de WebSocket activas
     for websocket in manager.active_connections:
         if websocket.client_state == WebSocketState.CONNECTED:
@@ -129,11 +126,8 @@ manager = ConnectionManager()
 @app.websocket("/ws/{table_id}")
 async def websocket_endpoint(websocket: WebSocket, table_id:int):
     await manager.connect(websocket)
-    global users_connected_to_socket 
-    global game_started
-    global game
-    global new_set
-    global card
+
+    global tables, users_connected_to_socket, game_started, game, new_set, card
     try:
         if table_id in tables:
             game = tables[table_id]
