@@ -14,7 +14,6 @@ app = FastAPI()
 tables = {} 
 users_connected_to_socket = {}
 game_started = {}
-game = None
 new_set = False
 card = None
 
@@ -39,7 +38,7 @@ async def read_root(request: Request):
 
 @app.get("/mesa/{table_id}", response_class=HTMLResponse)
 async def get_table(request: Request, response: Response, table_id:int):
-    global tables, users_connected_to_socket, game_started, game, new_set, card
+    global tables, users_connected_to_socket, game_started, new_set, card
     
     user_id = (request.cookies.get("user_id"))
     if user_id is None:
@@ -67,7 +66,7 @@ async def get_table(request: Request, response: Response, table_id:int):
 @app.get("/reload", response_class=HTMLResponse)
 async def reload(request: Request):
 
-    global tables, users_connected_to_socket, game_started, game, new_set, card
+    global tables, users_connected_to_socket, game_started, new_set, card
      # Cerrar todas las conexiones de WebSocket activas
     for websocket in manager.active_connections:
         if websocket.client_state == WebSocketState.CONNECTED:
@@ -82,10 +81,8 @@ async def reload(request: Request):
     tables = {}
     users_connected_to_socket = {}
     game_started = {}
-    game = None
     new_set = False
     card = None
-
 
     response = templates.TemplateResponse("index.html", {"request": request})
     return response
@@ -129,7 +126,7 @@ manager = ConnectionManager()
 async def websocket_endpoint(websocket: WebSocket, table_id:int):
     await manager.connect(websocket)
 
-    global tables, users_connected_to_socket, game_started, game, new_set, card
+    global tables, users_connected_to_socket, game_started, new_set, card
     try:
         if table_id in tables:
             game = tables[table_id]
