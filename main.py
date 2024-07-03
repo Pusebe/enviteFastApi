@@ -97,7 +97,7 @@ class ConnectionManager:
         await websocket.accept()
         self.active_connections.append(websocket)
 
-    def disconnect(self, websocket: WebSocket):
+    async def disconnect(self, websocket: WebSocket):
         if websocket in self.active_connections:
             self.active_connections.remove(websocket)
 
@@ -108,7 +108,7 @@ class ConnectionManager:
     async def broadcast(self, message: str):
         for connection in self.active_connections:
             try:
-                if websocket.client_state == WebSocketState.CONNECTED:
+                if websocket is not None and websocket.client_state == WebSocketState.CONNECTED:
                     await connection.send_json(message)
             except RuntimeError:
                 # La conexión WebSocket ya ha sido cerrada, omitir
