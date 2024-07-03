@@ -10,7 +10,6 @@ import uuid
 import time
 import asyncio
 
-
 app = FastAPI()
 tables = {} 
 users_connected_to_socket = {}
