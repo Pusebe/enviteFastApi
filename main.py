@@ -147,8 +147,10 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
             card_value = data.get("card")
 
             if data.get("reset"):
-                del tables[table_id]
-                del game_started[table_id]
+                if table_id in tables:
+                    del tables[table_id]
+                if table_id in game_started:
+                    del game_started[table_id]
                 users_connected_to_socket = {}
                 await manager.broadcast({"reload":True})
                 await manager.disconnect_all()
