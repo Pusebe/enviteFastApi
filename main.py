@@ -133,6 +133,8 @@ async def websocket_endpoint(websocket: WebSocket, table_id:int):
             game = tables[table_id]
         else:
         # Si el WebSocket se conecta a una mesa que no existe, cerramos la conexión
+            print("depurando que no hay mesa")
+            print(table_id)
             await websocket.close()
             return
         
