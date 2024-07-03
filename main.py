@@ -110,11 +110,12 @@ class ConnectionManager:
 
     async def broadcast(self, message: str):
         for connection in self.active_connections:
-            try:
-                await connection.send_json(message)
-            except RuntimeError:
-                # La conexión WebSocket ya ha sido cerrada, omitir
-                pass
+            if websocket.client_state == WebSocketState.CONNECTED:
+                try:
+                    await connection.send_json(message)
+                except RuntimeError:
+                    # La conexión WebSocket ya ha sido cerrada, omitir
+                    pass
 
     async def disconnect_all(self):
         # Cerrar todas las conexiones de websockets activas
